@@ -1,6 +1,7 @@
 package apib
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"text/template"
@@ -48,7 +49,7 @@ func (a *Action) Render() string {
 }
 
 func NewAction(method, path string) (*Action, error) {
-	title := path // TODO: get title properly
+	title := fmt.Sprintf("%s %s", method, path) // TODO: get title properly
 	if len(title) == 0 {
 		title = strings.Title(method)
 	}
