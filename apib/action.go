@@ -47,12 +47,12 @@ func (a *Action) Render() string {
 	return render(actionTmpl, a)
 }
 
-func NewAction(method, handlerName string) (*Action, error) {
-	title := handlerName // TODO: get title properly
+func NewAction(method, path string) (*Action, error) {
+	title := path // TODO: get title properly
 	if len(title) == 0 {
 		title = strings.Title(method)
 	}
-	desc := handlerName // TODO: get description properly
+	desc := "" // TODO: get description properly
 
 	return &Action{
 		Title:       title,

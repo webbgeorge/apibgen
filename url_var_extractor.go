@@ -1,6 +1,10 @@
 package apibgen
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/gorilla/mux"
+)
 
 type UrlVarExtractor interface {
 	Extract(req *http.Request) (vars map[string]string)
@@ -14,7 +18,7 @@ var _ UrlVarExtractor = &GorillaMuxUrlVarExtractor{}
 
 func (g *GorillaMuxUrlVarExtractor) Extract(req *http.Request) (vars map[string]string) {
 	var match mux.RouteMatch
-	if router.Match(req, &match) {
+	if g.Router.Match(req, &match) {
 		return match.Vars
 	}
 	return nil

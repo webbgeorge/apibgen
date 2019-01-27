@@ -1,7 +1,7 @@
 package apib
 
 import (
-	"os"
+	"io"
 	"strings"
 	"text/template"
 )
@@ -17,7 +17,6 @@ func init() {
 
 type Doc struct {
 	Group ResourceGroup
-	file  *os.File
 }
 
 type Metadata struct {
@@ -26,16 +25,10 @@ type Metadata struct {
 }
 
 func NewDoc(resourceGroupName string, filePath string) (doc *Doc, err error) {
-	fi, err := os.Create(filePath)
-	if err != nil {
-		return doc, err
-	}
-
 	doc = &Doc{
 		Group: ResourceGroup{
 			Title: strings.Title(resourceGroupName),
 		},
-		file: fi,
 	}
 
 	return
@@ -45,6 +38,6 @@ func (d *Doc) AddResource(resource *Resource) {
 	d.Group.Resources = append(d.Group.Resources, *resource)
 }
 
-func (d *Doc) Write() error {
-	return docTmpl.Execute(d.file, d)
+func (d *Doc) Write(writer io.Writer) error {
+	return docTmpl.Execute(writer, d)
 }

@@ -1,18 +1,36 @@
 package apibgen
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"net/http"
+	"sort"
 
 	"github.com/gaw508/apibgen/apib"
 )
 
 type Observer struct {
 	UrlVarExtractor UrlVarExtractor
-	resources map[string]*apib.Resource
+	Writer          io.Writer
+	resources       map[string]*apib.Resource
+	doc             *apib.Doc
 }
 
-func (a *Observer) Observe() func(res *http.Response, req *http.Request) {
+func NewObserver(extractor UrlVarExtractor, writer io.Writer, resourceGroupName string) *Observer {
+	d, err := apib.NewDoc(resourceGroupName, fmt.Sprintf("%s.apib", resourceGroupName))
+	if err != nil {
+		panic(err)
+	}
+	return &Observer{
+		UrlVarExtractor: extractor,
+		Writer:          writer,
+		doc:             d,
+		resources:       make(map[string]*apib.Resource),
+	}
+}
+
+func (o *Observer) Observe() func(res *http.Response, req *http.Request) {
 	return func(res *http.Response, req *http.Request) {
 		// copy request body into Request object
 		docReq, err := apib.NewRequest(req)
@@ -22,32 +40,49 @@ func (a *Observer) Observe() func(res *http.Response, req *http.Request) {
 		}
 
 		// setup resource
-		vars := a.UrlVarExtractor.Extract(req)
+		vars := o.UrlVarExtractor.Extract(req)
 		u := apib.NewURL(req, vars)
 		path := u.ParameterizedPath
 
-		if a.resources[path] == nil {
-			a.resources[path] = apib.NewResource(u)
+		if o.resources[path] == nil {
+			o.resources[path] = apib.NewResource(u)
 		}
 
 		// store response body in Response object
 		docResp := apib.NewResponse(res)
 
 		// find action
-		action := a.resources[path].FindAction(req.Method)
+		action := o.resources[path].FindAction(req.Method)
 		if action == nil {
 			// make new action
-			action, err = apib.NewAction(req.Method, "TODO: Handler name") // TODO: Handler name
+			action, err = apib.NewAction(req.Method, path)
 			if err != nil {
 				log.Println("Error:", err.Error())
 				return
 			}
 
 			// add Action to Resource's list of Actions
-			a.resources[path].AddAction(action)
+			o.resources[path].AddAction(action)
 		}
 
 		// add request, response to action
 		action.AddRequest(docReq, docResp)
+	}
+}
+
+func (o *Observer) Write() {
+	// sort resources by path
+	var uris []string
+	for k := range o.resources {
+		uris = append(uris, k)
+	}
+	sort.Strings(uris)
+	for _, uri := range uris {
+		o.doc.AddResource(o.resources[uri])
+	}
+
+	err := o.doc.Write(o.Writer)
+	if err != nil {
+		panic(err)
 	}
 }
