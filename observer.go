@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	"github.com/gaw508/apibgen/apib"
+	"github.com/steinfletcher/apitest"
 )
 
 type Observer struct {
@@ -30,8 +31,8 @@ func NewObserver(extractor UrlVarExtractor, writer io.Writer, resourceGroupName 
 	}
 }
 
-func (o *Observer) Observe() func(res *http.Response, req *http.Request) {
-	return func(res *http.Response, req *http.Request) {
+func (o *Observer) Observe() apitest.Observe {
+	return func(res *http.Response, req *http.Request, _ *apitest.APITest) {
 		// copy request body into Request object
 		docReq, err := apib.NewRequest(req)
 		if err != nil {

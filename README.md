@@ -1,7 +1,7 @@
 # apibgen
 
 A tool for generating API Blueprint documentation from
-[https://github.com/steinfletcher/api-test](https://github.com/steinfletcher/api-test) tests
+[https://github.com/steinfletcher/apitest](https://github.com/steinfletcher/apitest) tests
 
 **NOTE: This library is a WIP, use with caution**
 

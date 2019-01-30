@@ -2,14 +2,15 @@ package apibgen
 
 import (
 	"bytes"
-	"github.com/gorilla/mux"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"unicode"
+
+	"github.com/gorilla/mux"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestObserver(t *testing.T) {
@@ -34,8 +35,8 @@ func TestObserver(t *testing.T) {
 					),
 					res: &http.Response{
 						StatusCode: http.StatusOK,
-						Header: map[string][]string{"Content-Type": {"application/json"}},
-						Body: ioutil.NopCloser(bytes.NewBuffer([]byte(`{"paramThree": "valueThree", "paramFour": 10}`))),
+						Header:     map[string][]string{"Content-Type": {"application/json"}},
+						Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(`{"paramThree": "valueThree", "paramFour": 10}`))),
 					},
 				},
 			},
@@ -51,7 +52,7 @@ func TestObserver(t *testing.T) {
 			o := NewObserver(extractor, &buf, "Test Resource Group")
 			oFn := o.Observe()
 			for _, request := range tc.requests {
-				oFn(request.res, request.req)
+				oFn(request.res, request.req, nil)
 			}
 			o.Write()
 
